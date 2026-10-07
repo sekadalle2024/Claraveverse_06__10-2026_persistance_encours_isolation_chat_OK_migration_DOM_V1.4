@@ -54,6 +54,30 @@
       🔍 Diagnostic Complet
     </button>
 
+    <!-- Bouton Diagnostic SessionId (NOUVEAU - Tracer UUID) -->
+    <button onclick="(function() { if (typeof window.getSessionIdTraces !== 'function') { alert('❌ Tracer non chargé\\n\\nRecharger la page avec Ctrl+Shift+R'); return; } const result = window.getSessionIdTraces(); console.log('%c═══════════════════════════════════════', 'color: #667eea; font-weight: bold; font-size: 14px;'); console.log('%c RAPPORT SESSIONID TRACER', 'color: #667eea; font-weight: bold; font-size: 16px;'); console.log('%c═══════════════════════════════════════', 'color: #667eea; font-weight: bold; font-size: 14px;'); console.log(''); if (result.analysis.oldCount > 0) { console.log('%c ❌ PROBLÈME DÉTECTÉ', 'background: #f5576c; color: white; font-size: 14px; font-weight: bold; padding: 8px; border-radius: 4px;'); console.log(''); console.log('%c SessionIds ANCIENS (UUID): ' + result.analysis.oldCount, 'color: #f5576c; font-size: 13px; font-weight: bold;'); console.log('%c SessionIds STABLES: ' + result.analysis.stableCount, 'color: #4facfe; font-size: 13px;'); console.log(''); console.log('%c → Clara (React) crée des UUID qui écrasent le sessionId stable', 'color: #f5576c; font-size: 12px;'); console.log('%c → Tables sauvegardées sous différents sessionIds', 'color: #f5576c; font-size: 12px;'); console.log('%c → Restauration échoue (cherche sous mauvais sessionId)', 'color: #f5576c; font-size: 12px;'); } else { console.log('%c ✅ SUCCÈS', 'background: #4facfe; color: white; font-size: 14px; font-weight: bold; padding: 8px; border-radius: 4px;'); console.log(''); console.log('%c SessionIds STABLES: ' + result.analysis.stableCount, 'color: #4facfe; font-size: 13px; font-weight: bold;'); console.log('%c SessionIds ANCIENS: 0', 'color: #4facfe; font-size: 13px;'); console.log(''); console.log('%c → Un seul sessionId stable utilisé partout ✅', 'color: #4facfe; font-size: 12px;'); } console.log(''); console.log('📋 Rapport complet copié dans presse-papier'); copy(JSON.stringify(result, null, 2)); alert('✅ RAPPORT SESSIONID\\n\\n' + (result.analysis.oldCount > 0 ? '❌ PROBLÈME DÉTECTÉ\\n\\nSessionIds ANCIENS (UUID): ' + result.analysis.oldCount + '\\nSessionIds STABLES: ' + result.analysis.stableCount + '\\n\\n→ Clara crée des UUID!\\n\\nRapport complet dans console F12' : '✅ SUCCÈS\\n\\nSessionIds STABLES: ' + result.analysis.stableCount + '\\nSessionIds ANCIENS: 0\\n\\n→ Solution fonctionne!\\n\\nRapport complet dans console F12')); })();"
+            style="padding: 14px 24px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4); font-size: 15px; transition: all 0.3s; letter-spacing: 0.5px;"
+            onmouseenter="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(245, 87, 108, 0.5)';"
+            onmouseleave="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 6px 20px rgba(245, 87, 108, 0.4)';">
+      🔬 Tracer SessionId
+    </button>
+
+    <!-- Bouton Diagnostic Table_Consolidation (NOUVEAU) -->
+    <button onclick="(function() { if (typeof window.diagnosticTableConso !== 'function') { alert('❌ Diagnostic non chargé\\n\\nRecharger avec Ctrl+Shift+R'); return; } const result = window.diagnosticTableConso(); console.log('%c═══════════════════════════════════════', 'color: #4facfe; font-weight: bold; font-size: 14px;'); console.log('%c DIAGNOSTIC TABLE_CONSOLIDATION', 'color: #4facfe; font-weight: bold; font-size: 16px;'); console.log('%c═══════════════════════════════════════', 'color: #4facfe; font-weight: bold; font-size: 14px;'); console.log(''); result.tests.forEach(t => { console.log((t.passed ? '✅' : '❌') + ' ' + t.name); t.checks?.forEach(c => console.log('  ', c)); }); console.log(''); console.log('📋 Rapport complet copié dans presse-papier'); copy(JSON.stringify(result, null, 2)); alert('✅ DIAGNOSTIC TABLE_CONSOLIDATION\\n\\nRésultats dans console F12\\nRapport JSON copié dans presse-papier'); })();"
+            style="padding: 14px 24px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 0 6px 20px rgba(67, 233, 123, 0.4); font-size: 15px; transition: all 0.3s; letter-spacing: 0.5px;"
+            onmouseenter="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(67, 233, 123, 0.5)';"
+            onmouseleave="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 6px 20px rgba(67, 233, 123, 0.4)';">
+      🔍 Table_Consolidation
+    </button>
+
+    <!-- Bouton Vérifier Fix UUID (NOUVEAU) -->
+    <button onclick="(function() { if (typeof window.verifyUUIDFix !== 'function') { alert('❌ Fix UUID non chargé\\n\\nRecharger avec Ctrl+Shift+R'); return; } const result = window.verifyUUIDFix(); console.log(''); let msg = '📊 VÉRIFICATION FIX UUID\\n\\n'; if (result.cryptoFixed) { msg += '✅ crypto.randomUUID() → retourne stable\\n'; } else { msg += '❌ crypto.randomUUID() → retourne UUID\\n'; } if (result.currentSessionIdLocked) { msg += '✅ window.currentSessionId → verrouillé\\n'; } else { msg += '❌ window.currentSessionId → peut être écrasé\\n'; } if (result.noUUIDs === true) { msg += '✅ Aucun UUID détecté dans système\\n'; } else if (result.noUUIDs === false) { msg += '❌ UUID encore présents\\n'; } else { msg += '⚠️ Tracer non disponible\\n'; } msg += '\\nVoir console F12 pour détails'; alert(msg); })();"
+            style="padding: 14px 24px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 0 6px 20px rgba(250, 112, 154, 0.4); font-size: 15px; transition: all 0.3s; letter-spacing: 0.5px;"
+            onmouseenter="this.style.transform='translateY(-2px) scale(1.02)'; this.style.boxShadow='0 8px 25px rgba(250, 112, 154, 0.5)';"
+            onmouseleave="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 6px 20px rgba(250, 112, 154, 0.4)';">
+      ✅ Vérifier Fix UUID
+    </button>
+
     <!-- Bouton Triple Action - Nettoyage Complet -->
     <button onclick="(async () => { try { if (!confirm('🧹 NETTOYAGE TRIPLE ACTION\\n\\nSupprimer TOUTES les données ?\\n\\n1️⃣ IndexedDB (FloTableDB + clara_db)\\n2️⃣ DOM Storage (toutes tables)\\n3️⃣ LocalStorage (toutes clés)\\n\\n⚠️ ACTION IRRÉVERSIBLE\\n\\nConfirmer ?')) return; let report = '🧹 NETTOYAGE EN COURS...\\n\\n'; console.log('🧹 Triple Action: Début nettoyage complet'); console.log('─────────────────────────────────'); let steps = { indexedDB: { floTableDB: false, claraDB: false }, domStorage: false, localStorage: false }; console.log('\\n1️⃣ INDEXEDDB'); await new Promise(res => { const req1 = indexedDB.deleteDatabase('FloTableDB'); req1.onsuccess = () => { console.log('  ✅ FloTableDB supprimé'); steps.indexedDB.floTableDB = true; res(); }; req1.onerror = () => { console.log('  ⚠️ FloTableDB inexistant'); steps.indexedDB.floTableDB = true; res(); }; }); await new Promise(res => { const req2 = indexedDB.deleteDatabase('clara_db'); req2.onsuccess = () => { console.log('  ✅ clara_db supprimé'); steps.indexedDB.claraDB = true; res(); }; req2.onerror = () => { console.log('  ⚠️ clara_db inexistant'); steps.indexedDB.claraDB = true; res(); }; }); await new Promise(res => setTimeout(res, 300)); console.log('\\n2️⃣ DOM STORAGE'); const storage = document.getElementById('claraverse-dom-storage'); let tableCount = 0; if (storage) { tableCount = storage.querySelectorAll('table').length; storage.innerHTML = ''; console.log('  ✅ DOM Storage vidé (' + tableCount + ' tables)'); steps.domStorage = true; } else { console.log('  ⚠️ DOM Storage inexistant'); steps.domStorage = true; } console.log('\\n3️⃣ LOCALSTORAGE'); const lsCount = localStorage.length; localStorage.clear(); console.log('  ✅ LocalStorage vidé (' + lsCount + ' clés)'); steps.localStorage = true; console.log('\\n─────────────────────────────────'); console.log('✅ NETTOYAGE TERMINÉ'); await new Promise(res => setTimeout(res, 500)); const dbs = await indexedDB.databases(); const remaining = dbs.filter(db => db.name === 'FloTableDB' || db.name === 'clara_db'); let finalReport = '✅ NETTOYAGE TRIPLE ACTION RÉUSSI\\n\\n'; finalReport += '1️⃣ IndexedDB:\\n'; if (remaining.length === 0) { finalReport += '  ✅ FloTableDB supprimé\\n  ✅ clara_db supprimé\\n\\n'; } else { finalReport += '  ⚠️ Bases restantes: ' + remaining.map(d => d.name).join(', ') + '\\n\\n'; } finalReport += '2️⃣ DOM Storage:\\n  ✅ ' + tableCount + ' table(s) supprimée(s)\\n\\n'; finalReport += '3️⃣ LocalStorage:\\n  ✅ ' + lsCount + ' clé(s) supprimée(s)\\n\\n'; if (remaining.length > 0) { finalReport += '⚠️ Fermez tous les onglets Claraverse\\npuis relancez le nettoyage.'; alert(finalReport); } else { finalReport += '🔄 Rechargement dans 2 secondes...'; alert(finalReport); setTimeout(() => location.reload(), 2000); } } catch (err) { console.error('❌ Erreur Triple Action:', err); alert('❌ ERREUR NETTOYAGE\\n\\n' + err.message + '\\n\\nConsultez la console F12 pour détails.'); } })();"
             style="padding: 14px 24px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4); font-size: 15px; transition: all 0.3s; letter-spacing: 0.5px;"
@@ -75,7 +99,13 @@
   <!-- ========================================== -->
   
   <!-- ⭐ NOUVEAU SYSTÈME DE PERSISTANCE DOM ⭐ -->
-  <!-- 1. DOM Storage Manager - Gestionnaire de stockage (DOIT être EN PREMIER) -->
+  <!-- 0. Stable Session Manager - Gestion sessionId stable (DOIT être EN PREMIER) -->
+  <script src="/stable-session-manager.js"></script>
+  
+  <!-- 0.1 Diagnostic SessionId Tracer - DEBUG sessionId (6 Oct 2026) -->
+  <script src="/diagnostic-sessionid-tracer.js"></script>
+  
+  <!-- 1. DOM Storage Manager - Gestionnaire de stockage -->
   <script src="/dom-storage-manager.js"></script>
   
   <!-- 2. DOM Restore Manager - Gestionnaire de restauration -->
@@ -89,6 +119,21 @@
   
   <!-- 5. Diagnostic Complet DOM Storage - Interface de tests consolidés -->
   <script src="/diagnostic-complet-dom-storage.js"></script>
+  
+  <!-- 6. Diagnostic Tables Non Persistantes - Analyse problèmes restauration -->
+  <script src="/diagnostic-tables-non-persistantes.js"></script>
+  
+  <!-- 7. Vérification Installation Solution - Check que tout est en place -->
+  <script src="/verif-installation-solution.js"></script>
+  
+  <!-- 8. Diagnostic Table Consolidation - Analyse Table_Consolidation spécifiquement -->
+  <script src="/diagnostic-table-conso.js"></script>
+  
+  <!-- 9. Welcome Diagnostic Message - Message d'accueil pour guider l'utilisateur -->
+  <script src="/welcome-diagnostic-message.js"></script>
+  
+  <!-- 10. Fix UUID Block - Solution bloquage UUID (Hypothèse 4.1) -->
+  <script src="/fix-uuid-block.js"></script>
   
   <!-- ========================================== -->
   <!-- 🚫 ANCIEN SYSTÈME INDEXEDDB (DÉSACTIVÉ) -->

@@ -13,6 +13,47 @@ class DOMRestoreManager {
   }
 
   /**
+   * Obtenir sessionId stable (Solution Hypothèse 1.1 + Fix UUID)
+   */
+  getStableSessionId() {
+    // Fonction helper: détecter si c'est un UUID
+    const isUUID = (str) => {
+      if (!str) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    };
+    
+    // 1. Utiliser stableSessionManager si disponible
+    if (window.stableSessionManager) {
+      const stableId = window.stableSessionManager.getSessionId();
+      if (stableId && !isUUID(stableId)) {
+        return stableId;
+      }
+    }
+    
+    // 2. Vérifier currentSessionId (mais bloquer si UUID)
+    if (window.currentSessionId && !isUUID(window.currentSessionId)) {
+      return window.currentSessionId;
+    }
+    
+    // Si currentSessionId est UUID, le bloquer
+    if (window.currentSessionId && isUUID(window.currentSessionId)) {
+      console.warn(`🚫 [DOM Restore] currentSessionId est UUID: ${window.currentSessionId}`);
+      console.warn(`   → Recherche sessionId stable alternatif`);
+    }
+    
+    // 3. Fallback: localStorage (mais bloquer si UUID)
+    const lsSessionId = localStorage.getItem('claraverse_stable_session_id');
+    if (lsSessionId && !isUUID(lsSessionId)) {
+      return lsSessionId;
+    }
+    
+    // 4. Erreur si aucun sessionId stable trouvé
+    console.error('❌ [DOM Restore] Aucun sessionId STABLE trouvé');
+    console.error('   Tous les sessionIds disponibles sont des UUID ou inexistants');
+    return null;
+  }
+
+  /**
    * Restaurer toutes les tables d'une session
    */
   async restoreSessionTables(sessionId) {
@@ -30,11 +71,22 @@ class DOMRestoreManager {
     this.isRestoring = true;
     this.lastRestoreTime = now;
 
-    console.log(`🔄 [DOM Restore] Début restauration session: ${sessionId}`);
+    // ✅ SOLUTION HYPOTHÈSE 1.1 : Utiliser sessionId STABLE
+    const stableSessionId = this.getStableSessionId();
+    if (!stableSessionId) {
+      console.error('❌ [DOM Restore] SessionId introuvable, restauration annulée');
+      this.isRestoring = false;
+      return;
+    }
+
+    console.log(`🔄 [DOM Restore] Début restauration session: ${stableSessionId}`);
+    if (sessionId && sessionId !== stableSessionId) {
+      console.log(`🔄 [DOM Restore] SessionId normalisé: ${sessionId} → ${stableSessionId}`);
+    }
 
     try {
-      // Récupérer tables depuis DOM Storage
-      const tables = window.domStorageManager.restoreAllTables(sessionId);
+      // Récupérer tables depuis DOM Storage avec sessionId stable
+      const tables = window.domStorageManager.restoreAllTables(stableSessionId);
       
       console.log(`📋 [DOM Restore] ${tables.length} table(s) à restaurer`);
 
@@ -46,7 +98,7 @@ class DOMRestoreManager {
       
       // Émettre événement de succès
       document.dispatchEvent(new CustomEvent('claraverse:restore:complete', {
-        detail: { sessionId, tableCount: tables.length }
+        detail: { sessionId: stableSessionId, tableCount: tables.length }
       }));
 
     } catch (error) {
@@ -158,3 +210,36 @@ class DOMRestoreManager {
 window.domRestoreManager = new DOMRestoreManager();
 
 console.log('✅ [DOM Restore Manager] Chargé et initialisé');
+
+// ✅ SOLUTION HYPOTHÈSE 1.1 : AUTO-RESTAURATION AU CHARGEMENT
+// Attendre que stableSessionManager soit chargé, puis restaurer automatiquement
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('🔄 [DOM Restore] DOMContentLoaded détecté');
+  
+  // Attendre 2 secondes pour laisser le temps au DOM de se stabiliser
+  setTimeout(() => {
+    console.log('🔄 [DOM Restore] Démarrage auto-restauration...');
+    
+    // Obtenir sessionId stable
+    const sessionId = window.stableSessionManager 
+      ? window.stableSessionManager.getSessionId()
+      : (window.currentSessionId || localStorage.getItem('claraverse_stable_session_id'));
+    
+    if (sessionId) {
+      console.log(`🔄 [DOM Restore] SessionId détecté: ${sessionId}`);
+      window.domRestoreManager.forceRestore(sessionId);
+    } else {
+      console.warn('⚠️ [DOM Restore] Aucun sessionId, restauration ignorée');
+    }
+  }, 2000);
+});
+
+// Écouter changement de session pour restaurer automatiquement
+document.addEventListener('claraverse:session:changed', (e) => {
+  console.log('🔄 [DOM Restore] Changement de session détecté');
+  if (e.detail && e.detail.sessionId) {
+    setTimeout(() => {
+      window.domRestoreManager.forceRestore(e.detail.sessionId);
+    }, 500);
+  }
+});
